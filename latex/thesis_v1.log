@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.3.5)  30 MAR 2026 14:25
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2025.3.5)  16 APR 2026 11:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -331,15 +331,15 @@ Package fontspec Info: Font family 'Asana-Math.otf(1)' created for font
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 23.
+(Font)              `operators' in the math version `normal' on input line 26.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  OT1/cmr/m/n --> TU/Asana-Math.otf(1)/m/n on input line 
-23.
+26.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 23.
+(Font)              `operators' in the math version `bold' on input line 26.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  OT1/cmr/bx/n --> TU/Asana-Math.otf(1)/b/n on input line
- 23.
+ 26.
 
 Package fontspec Info: Asana-Math scale = 1.0001.
 
@@ -392,15 +392,15 @@ sty=1;"
 (fontspec)             =0pt\relax \fontdimen 21\font =0pt\relax 
 
 LaTeX Font Info:    Encoding `OMS' has changed to `TU' for symbol font
-(Font)              `symbols' in the math version `normal' on input line 23.
+(Font)              `symbols' in the math version `normal' on input line 26.
 LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
 (Font)                  OMS/cmsy/m/n --> TU/Asana-Math.otf(2)/m/n on input line
- 23.
+ 26.
 LaTeX Font Info:    Encoding `OMS' has changed to `TU' for symbol font
-(Font)              `symbols' in the math version `bold' on input line 23.
+(Font)              `symbols' in the math version `bold' on input line 26.
 LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
 (Font)                  OMS/cmsy/b/n --> TU/Asana-Math.otf(2)/b/n on input line
- 23.
+ 26.
 
 Package fontspec Info: Asana-Math scale = 0.9999.
 
@@ -442,16 +442,16 @@ sty=1;"
 
 LaTeX Font Info:    Encoding `OMX' has changed to `TU' for symbol font
 (Font)              `largesymbols' in the math version `normal' on input line 2
-3.
+6.
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
 (Font)                  OMX/cmex/m/n --> TU/Asana-Math.otf(3)/m/n on input line
- 23.
+ 26.
 LaTeX Font Info:    Encoding `OMX' has changed to `TU' for symbol font
-(Font)              `largesymbols' in the math version `bold' on input line 23.
+(Font)              `largesymbols' in the math version `bold' on input line 26.
 
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
 (Font)                  OMX/cmex/m/n --> TU/Asana-Math.otf(3)/b/n on input line
- 23.
+ 26.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/listings/listings.sty
 \lst@mode=\count295
 \lst@gtempboxa=\box55
@@ -1165,9 +1165,9 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip68
 )
-Package hyperref Info: Option `unicode' set `true' on input line 93.
-Package hyperref Info: Option `colorlinks' set `true' on input line 93.
-Package hyperref Info: Option `breaklinks' set `true' on input line 93.
+Package hyperref Info: Option `unicode' set `true' on input line 96.
+Package hyperref Info: Option `colorlinks' set `true' on input line 96.
+Package hyperref Info: Option `breaklinks' set `true' on input line 96.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/tools/multicol.sty
 Package: multicol 2023/03/30 v1.9f multicolumn formatting (FMi)
 \c@tracingmulticols=\count361
@@ -1727,53 +1727,53 @@ Package biblatex Warning: 'babel/polyglossia' detected but 'csquotes' missing.
 (./thesis_v1.aux)
 \openout1 = `thesis_v1.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for X2/cmr/m/n on input line 334.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for X2/cmr/m/n on input line 337.
 LaTeX Font Info:    Trying to load font information for X2+cmr on input line 33
-4.
+7.
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/cyrillic/x2cmr.fd
 File: x2cmr.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 )
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for T2A/cmr/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 334.
-LaTeX Font Info:    ... okay on input line 334.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for T2A/cmr/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 337.
+LaTeX Font Info:    ... okay on input line 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathrm' in version `normal'
 (Font)                  TU/Asana-Math.otf(1)/m/n --> TU/TimesNewRoman(0)/m/n on
- input line 334.
+ input line 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
 (Font)                  OT1/cmr/m/it --> TU/TimesNewRoman(0)/m/it on input line
- 334.
+ 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
 (Font)                  OT1/cmr/bx/n --> TU/TimesNewRoman(0)/b/n on input line 
-334.
+337.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 334.
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 334.
+(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 334.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 337.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 334.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 337.
 
 
 Package unicode-math Warning: Using \overbracket and \underbracket from
@@ -1798,9 +1798,9 @@ Package unicode-math Warning: I'm going to overwrite the following commands
 Package pgfplots Warning: running in backwards compatibility mode (unsuitable t
 ick labels; missing features). Consider writing \pgfplotsset{compat=1.18} into 
 your preamble.
- on input line 334.
+ on input line 337.
 
-Package hyperref Info: Link coloring ON on input line 334.
+Package hyperref Info: Link coloring ON on input line 337.
 (./thesis_v1.out) (./thesis_v1.out)
 \@outlinefile=\write5
 \openout5 = `thesis_v1.out'.
@@ -1810,7 +1810,7 @@ Package hyperref Info: Link coloring ON on input line 334.
 Package todonotes Warning: The length marginparwidth is less than 2cm and will 
 most likely cause issues with the appearance of inserted todonotes. The issue c
 an be solved by adding a line like \setlength {\marginparwidth }{2cm} prior to 
-loading the todonotes package. on input line 334.
+loading the todonotes package. on input line 337.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -1874,8 +1874,8 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'thesis_v1.bbl' not found.
 
 No file thesis_v1.bbl.
-Package biblatex Info: Reference section=0 on input line 334.
-Package biblatex Info: Reference segment=0 on input line 334.
+Package biblatex Info: Reference section=0 on input line 337.
+Package biblatex Info: Reference segment=0 on input line 337.
 File: hse_logo.png Graphic file (type bmp)
 <hse_logo.png>
 [1
@@ -1904,10 +1904,10 @@ Package logreq Info: Writing requests to 'thesis_v1.run.xml'.
 Here is how much of TeX's memory you used:
  52964 strings out of 474773
  1181821 string characters out of 5757725
- 2367275 words of memory out of 5000000
+ 2366278 words of memory out of 5000000
  74348 multiletter control sequences out of 15000+600000
  559671 words of font info for 64 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 84i,11n,117p,1174b,3850s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,11n,117p,1173b,3850s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 Output written on thesis_v1.pdf (2 pages).

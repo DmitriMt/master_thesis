@@ -1,0 +1,468 @@
+---
+title: "PSM + DID"
+---
+
+
+```{r}
+library(MatchIt)
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(plm)
+library(fixest)
+library(zoo)
+library(did)
+library(lubridate)
+library(googledrive)
+library(ggplot2)
+library(arrow)
+library(stargazer)
+library(lmtest)
+```
+
+```{r}
+pre_psm <- read_parquet('../data/panel_common_pre_psm_mean3_months_with_add_health_variables_no_outliers.parquet')
+pre_psm$log_age = log(pre_psm$age)
+pre_psm <- pre_psm %>%
+  filter(year %in% c(2019, 2020))
+pre_psm$treatment <- as.factor(pre_psm$is_employed_has_disablity)
+pre_psm
+```
+
+```{r}
+full_data <- read_parquet('../data/panel_common_pre_psm_mean3_months_with_add_health_variables_no_outliers.parquet')
+full_data$log_age = log(full_data$age)
+#full_data <- full_data %>%
+#  filter(year %in% c( 2019, 2020, 2021))
+
+full_data <- full_data %>%
+  filter(!is.na(period_relevance))
+full_data
+```
+
+
+
+```{r}
+boxplot(pre_psm$net_job)
+```
+
+```{r}
+ggplot(pre_psm, aes(x = factor(is_employed_has_disablity), y = net_job)) +
+  # Use geom_boxplot to create the plot
+  geom_boxplot(alpha = 0.7, fill = "lightblue") + 
+  
+  # OPTIONAL: Add jitter points to see every single data point 
+  # (This helps ensure you aren't missing density information)
+  geom_jitter(width = 0.1, alpha = 0.2, color = "darkgrey") + 
+  
+  # Improve appearance
+  labs(title = "Comparison of Score Distribution by Group",
+       y = "Score Value",
+       x = "Group Category") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(pre_psm, aes(x = factor(is_employed_has_disablity), y = log(net_job + 1))) +
+  # Use geom_boxplot to create the plot
+  geom_boxplot(alpha = 0.7, fill = "lightblue") + 
+  
+  # OPTIONAL: Add jitter points to see every single data point 
+  # (This helps ensure you aren't missing density information)
+  geom_jitter(width = 0.1, alpha = 0.2, color = "darkgrey") + 
+  
+  # Improve appearance
+  labs(title = "Comparison of Score Distribution by Group",
+       y = "Score Value",
+       x = "Group Category") +
+  theme_minimal()
+```
+
+
+```{r}
+model1 <- feols(
+    net_job ~ is_employed_has_disablity | idind + year,
+    cluster = ~idind,
+    data = pre_psm
+)
+print(summary(model1))
+
+print(confint(model1, level = 0.95))
+```
+
+```{r}
+model2 <- feols(
+    log(net_job + 1) ~ is_employed_has_disablity | idind + year,
+    cluster = ~idind,
+    data = pre_psm
+)
+print(summary(model2))
+
+print(confint(model2, level = 0.95))
+```
+
+```{r}
+model3 <- feols(
+    log(net_job + 1) ~ i(period_relevance, is_employed_has_disablity, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = full_data
+)
+print(summary(model3))
+
+print(confint(model3, level = 0.95))
+```
+
+```{r}
+model4 <- feols(
+    net_job ~ i(period_relevance, is_employed_has_disablity, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = full_data
+)
+print(summary(model4))
+
+print(confint(model4, level = 0.95))
+```
+```{r}
+etable(model1, model2, order = "f", drop = "Int")
+```
+
+```{r}
+etable(model3, model4, order = "f", drop = "Int")
+```
+
+```{r}
+coefplot(model3)
+```
+
+```{r}
+coefplot(model4)
+```
+
+
+```{r}
+model4 <- feols(
+    log(net_job + 1) ~ i(period_relevance, is_employed_has_disablity, ref = -1) + disability_class_first_group| idind + year,
+    cluster = ~idind,
+    data = full_data
+)
+print(summary(model4))
+
+print(confint(model4, level = 0.95))
+```
+
+
+
+```{r}
+psm <- matchit(is_employed_has_disablity ~ log_age + is_female +
+                 educ_level_school_or_less + educ_level_common +
+                 educ_level_higher + educ_level_university + is_married + 
+                 chronic_lung + chronic_liver + chronic_kidney + 
+                 chronic_stomach + chronic_spinal + disease_neuro + 
+                 disease_eye + allegies,
+                  data = full_data,
+                  #method = "full",
+                  #distance = "mahalanobis",
+                  #distance = "glm",
+                  #exact = ~log_age
+               )
+print(summary(psm, un = FALSE))
+```
+
+
+```{r}
+plot(psm, type = "jitter", interactive = FALSE)
+```
+
+
+```{r}
+plot(psm, type = "density", interactive = FALSE,
+     which.xs = ~log_age + is_female +
+                 educ_level_school_or_less + educ_level_common +
+                 educ_level_higher + educ_level_university + is_married + 
+                 chronic_lung + chronic_liver + chronic_kidney + 
+                 chronic_stomach + chronic_spinal + disease_neuro + 
+                 disease_eye + allegies)
+```
+
+
+```{r}
+plot(summary(psm))
+```
+
+
+```{r}
+m.data <- match_data(psm)
+m.data
+```
+
+
+```{r}
+write_parquet(m.data, '../data/panel_common_post_psm_full_mean3_months_with_add_health_variables_no_outliers.parquet')
+```
+
+
+```{r}
+model5 <- feols(
+    net_job ~ is_employed_has_disablity | idind + year,
+    cluster = ~idind,
+    data = m.data
+)
+print(summary(model5))
+```
+
+```{r}
+model6 <- feols(
+    log(net_job + 1) ~ is_employed_has_disablity | idind + year,
+    cluster = ~idind,
+    data = m.data
+)
+print(summary(model6))
+```
+
+
+```{r}
+model4 <- feols(
+    j60 ~ is_employed_has_disablity | idind + year,
+    cluster = ~idind,
+    data = m.data
+)
+print(summary(model4))
+```
+
+
+```{r}
+data_plm <- pdata.frame(m.data, index = c("idind", "year"))
+
+# Transform to plm
+agg_did_model <- plm(
+    net_job ~ is_employed_has_disablity,
+    effect = "twoways",  # equivalent to | store + period
+    #model = "withdevtools::install_github('sipemu/eventstudy')in",
+    index = c("idind", "year"),
+    data = data_plm
+)
+
+# For clustered standard errors at store level
+summary(agg_did_model, vcov = vcovHC(agg_did_model, method = "arellano", type = "HC1", cluster = "group"))
+```
+
+
+```{r}
+vcov_clustered <- vcovHC(agg_did_model, method = "arellano", type = "HC1", cluster = "group")
+confint(agg_did_model, vcov. = vcov_clustered, level = 0.95)
+```
+
+
+```{r}
+library(lmtest)
+coeftest_result <- coeftest(agg_did_model, vcov. = vcov_clustered)
+
+ci_coeftest <- confint(coeftest_result, level = 0.95)
+print(ci_coeftest)
+```
+
+```{r}
+event_data <- read_parquet('../data/panel_common_pre_psm_3last_months.parquet')
+event_data$log_age = log(event_data$age)
+event_data <- event_data %>%
+  filter(year %in% c(2017, 2018, 2019, 2020, 2021))
+event_data
+```
+
+```{r}
+psm <- matchit(is_employed_has_disablity ~ log_age + is_female +
+                 educ_level_school_or_less + educ_level_common +
+                 educ_level_higher + educ_level_university + is_married,
+                  data = event_data,
+                  #method = "full",
+                  #distance = "mahalanobis",
+                  #distance = "glm",
+                  exact = ~log_age
+               )
+print(summary(psm, un = FALSE))
+```
+
+```{r}
+m.data <- match_data(psm)
+m.data
+```
+
+
+```{r}
+event_study_model <- feols(
+    net_job ~ i(period_relevance, is_employed_has_disablity, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = event_data
+)
+
+print(summary(event_study_model))
+```
+
+
+```{r}
+event_study_model <- feols(
+    net_job ~ i(period_relevance, is_employed_has_disablity, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = m.data
+)
+
+print(summary(event_study_model))
+```
+
+
+# plm
+
+
+```{r}
+data_plm <- pdata.frame(pre_psm, index = c("idind", "year"))
+
+# Transform to plm
+agg_did_model <- plm(
+    net_job ~ is_employed_has_disablity,
+    effect = "twoways",  # equivalent to | store + period
+    #model = "withdevtools::install_github('sipemu/eventstudy')in",
+    index = c("idind", "year"),
+    data = data_plm
+)
+
+# For clustered standard errors at store level
+summary(agg_did_model, vcov = vcovHC(agg_did_model, method = "arellano", type = "HC1", cluster = "group"))
+```
+
+```{r}
+
+coeftest_result <- coeftest(agg_did_model, vcov. = vcov_clustered)
+print(confint(coeftest_result, level = 0.95))
+```
+
+```{r}
+data_plm <- pdata.frame(pre_psm, index = c("idind", "year"))
+
+# Transform to plm
+agg_did_model <- plm(
+    j60 ~ is_employed_has_disablity,
+    effect = "twoways",  # equivalent to | store + period
+    #model = "withdevtools::install_github('sipemu/eventstudy')in",
+    index = c("idind", "year"),
+    data = data_plm
+)
+
+# For clustered standard errors at store level
+summary(agg_did_model, vcov = vcovHC(agg_did_model, method = "arellano", type = "HC1", cluster = "group"))
+```
+
+
+
+
+```{r}
+m.data
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
