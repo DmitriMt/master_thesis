@@ -21,7 +21,7 @@ library(lmtest)
 ```
 
 ```{r}
-pre_psm <- read_parquet('../data/panel_common_pre_psm_mean3_months_with_add_health_variables_no_outliers.parquet')
+pre_psm <- read_parquet('../data/presence_in_both_periods.parquet')
 pre_psm$log_age = log(pre_psm$age)
 pre_psm <- pre_psm %>%
   filter(year %in% c(2019, 2020))
@@ -98,7 +98,7 @@ model2 <- feols(
 )
 print(summary(model2))
 
-print(confint(model2, level = 0.95))
+print(confint(model2, level = 0.90))
 ```
 
 ```{r}

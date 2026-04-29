@@ -1,0 +1,394 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(MatchIt)
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(plm)
+library(fixest)
+library(zoo)
+library(did)
+library(lubridate)
+library(googledrive)
+library(ggplot2)
+library(arrow)
+library(stargazer)
+library(lmtest)
+library(tidyverse)
+library(fixest)
+library(skimr)
+library(plm)
+library(modelsummary)
+```
+
+
+```{r}
+panel = read_parquet('../data/wages_working_data2.parquet')
+panel <- panel %>%
+  filter(year %in% c(2019, 2020))
+panel$log_age <- log(panel$age + 1)
+panel
+```
+
+```{r}
+panel_full = read_parquet('../data/wages_working_data2.parquet')
+panel_full$log_age <- log(panel_full$age + 1)
+panel_full
+```
+
+
+```{r}
+model1 <- feols(
+    wages ~ has_disability | idind + year,
+    cluster = ~idind,
+    data = panel
+)
+print(summary(model1))
+
+print(confint(model1, level = 0.95))
+```
+
+```{r}
+etable(model1, 
+       tex = TRUE,
+       title = "Regression Results",
+       label = "tab:results",
+       digits = 3)
+```
+
+
+
+```{r}
+model2 <- feols(
+    log(wages + 1) ~ has_disability | idind + year,
+    cluster = ~idind,
+    data = panel
+)
+print(summary(model2))
+
+print(confint(model2, level = 0.95))
+```
+
+```{r}
+ggplot(panel, aes(x = factor(has_disability), y = wages)) +
+  # Use geom_boxplot to create the plot
+  geom_boxplot(alpha = 0.7, fill = "lightblue") + 
+  
+  # OPTIONAL: Add jitter points to see every single data point 
+  # (This helps ensure you aren't missing density information)
+  geom_jitter(width = 0.1, alpha = 0.2, color = "darkgrey") + 
+  
+  # Improve appearance
+  labs(title = "Comparison of Score Distribution by Group",
+       y = "Score Value",
+       x = "Group Category") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(panel, aes(x = factor(has_disability), y = log(wages + 1))) +
+  # Use geom_boxplot to create the plot
+  geom_boxplot(alpha = 0.7, fill = "lightblue") + 
+  
+  # OPTIONAL: Add jitter points to see every single data point 
+  # (This helps ensure you aren't missing density information)
+  geom_jitter(width = 0.1, alpha = 0.2, color = "darkgrey") + 
+  
+  # Improve appearance
+  labs(title = "Comparison of Score Distribution by Group",
+       y = "Score Value",
+       x = "Group Category") +
+  theme_minimal()
+```
+
+```{r}
+model3 <- feols(
+    log(wages + 1) ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = panel_full
+)
+print(summary(model3))
+
+print(confint(model3, level = 0.95))
+```
+
+
+```{r}
+etable(model3, 
+       tex = TRUE,
+       title = "Regression Results",
+       label = "tab:results",
+       digits = 3)
+```
+
+
+
+```{r}
+coefplot(model3)
+```
+
+
+```{r}
+model4 <- feols(
+    wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = panel_full
+)
+print(summary(model4))
+
+print(confint(model4, level = 0.95))
+```
+
+```{r}
+etable(model4, 
+       tex = TRUE,
+       title = "Regression Results",
+       label = "tab:results",
+       digits = 3)
+```
+
+
+
+```{r}
+coefplot(model4)
+```
+
+
+```{r}
+wald_test <- wald(model4, "period_relevance::-2")
+print(wald_test)
+```
+
+```{r}
+coef_df <- broom::tidy(model4, conf.int = TRUE) |>
+    filter(str_detect(term, "period_relevance")) |>
+    mutate(
+        relative_period = as.numeric(str_extract(term, "-?\\d+")),
+        type = ifelse(relative_period < 0, "Pre-treatment", "Post-treatment")
+    )
+coef_df
+```
+
+
+```{r}
+broom::tidy(model4, conf.int = TRUE)
+```
+
+
+
+```{r}
+coef_df <- broom::tidy(model4, conf.int = TRUE) |>
+    filter(str_detect(term, "period_relevance")) |>
+    mutate(
+        relative_period = as.numeric(str_extract(term, "-?\\d+")),
+        type = ifelse(relative_period < 0, "Pre-treatment", "Post-treatment")
+    )
+
+# Add the reference period (k = -1) with zero effect
+coef_df <- bind_rows(
+    coef_df,
+    tibble(
+        term = "period_relevance::-1:treatment",
+        estimate = 0,
+        std.error = 0,
+        conf.low = 0,
+        conf.high = 0,
+        relative_period = -1,
+        type = "Pre-treatment"
+    )
+) |>
+    arrange(relative_period)
+
+# Identify max effect for annotation
+max_effect_row <- coef_df |> filter(estimate == max(estimate))
+
+# Plot
+p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
+    # Reference lines
+    geom_hline(yintercept = 0, linetype = "dashed", color = book_colors$muted, linewidth = 0.8) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = book_colors$muted, linewidth = 0.8) +
+    # Shade pre-treatment region
+    annotate("rect",
+        xmin = -6.5, xmax = 0,
+        ymin = min(coef_df$conf.low) - 0.5, ymax = max(coef_df$conf.high) + 0.5,
+        fill = book_colors$light_gray, alpha = 0.5
+    ) +
+    # Error bars and points
+    geom_errorbar(
+        aes(ymin = conf.low, ymax = conf.high),
+        width = 0.2,
+        color = book_colors$primary,
+        linewidth = 0.8
+    ) +
+    geom_point(size = 3, color = book_colors$primary) +
+    # Annotations
+    annotate("text",
+        x = -3.5, y = max(coef_df$conf.high) * 0.7,
+        label = "Pre-treatment\n(should be ~0)",
+        color = book_colors$muted,
+        size = 5.5,
+        fontface = "italic"
+    ) +
+    annotate("text",
+        x = 2.5, y = max(coef_df$conf.high) * 0.95,
+        label = "Post-treatment\n(treatment effect)",
+        color = book_colors$primary,
+        size = 5.5,
+        fontface = "italic"
+    ) +
+    labs(
+        title = "Event study: effect of OOH campaign on sales over time",
+        subtitle = "Reference period: k = -1 (one period before treatment)",
+        x = "Periods relative to treatment",
+        y = "Estimated effect (millions R$)",
+        caption = "Takeaway: No significant pre-trends; effect peaks at k=1, then gradually declines."
+    ) +
+    scale_x_continuous(breaks = seq(-6, 3, 1)) +
+    theme_book() +
+    theme(
+        axis.title = element_text(size = 17)
+    )
+
+print(p_event_study)
+```
+
+```{r}
+coef_df
+```
+
+
+
+```{r}
+coef_df <- broom::tidy(model3, conf.int = TRUE) |>
+    filter(str_detect(term, "period_relevance")) |>
+    mutate(
+        relative_period = as.numeric(str_extract(term, "-?\\d+")),
+        type = ifelse(relative_period < -1, "Pre-treatment", "Post-treatment")
+    )
+
+# Add the reference period (k = -1) with zero effect
+coef_df <- bind_rows(
+    coef_df,
+    tibble(
+        term = "period_relevance::-1:treatment",
+        estimate = 0,
+        std.error = 0,
+        conf.low = 0,
+        conf.high = 0,
+        relative_period = -1,
+        type = "Pre-treatment"
+    )
+) |>
+    arrange(relative_period)
+
+# Identify max effect for annotation
+max_effect_row <- coef_df |> filter(estimate == max(estimate))
+
+# Plot
+p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
+    # Reference lines
+    geom_hline(yintercept = 0, linetype = "dashed", color = book_colors$muted, linewidth = 0.8) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = book_colors$muted, linewidth = 0.8) +
+    # Shade pre-treatment region
+    annotate("rect",
+        xmin = -6.5, xmax = 0,
+        ymin = min(coef_df$conf.low) - 0.5, ymax = max(coef_df$conf.high) + 0.5,
+        fill = book_colors$light_gray, alpha = 0.5
+    ) +
+    # Error bars and points
+    geom_errorbar(
+        aes(ymin = conf.low, ymax = conf.high),
+        width = 0.2,
+        color = book_colors$primary,
+        linewidth = 0.8
+    ) +
+    geom_point(size = 3, color = book_colors$primary) +
+    # Annotations
+    annotate("text",
+        x = -3.5, y = max(coef_df$conf.high) * 0.7,
+        label = "Pre-treatment\n(should be ~0)",
+        color = book_colors$muted,
+        size = 5.5,
+        fontface = "italic"
+    ) +
+    annotate("text",
+        x = 2.5, y = max(coef_df$conf.high) * 0.95,
+        label = "Post-treatment\n(treatment effect)",
+        color = book_colors$primary,
+        size = 5.5,
+        fontface = "italic"
+    ) +
+    labs(
+        title = "Event plot: effect of pandemic on wages over time",
+        subtitle = "Reference period: k = -1 (one period before treatment)",
+        x = "Periods relative to treatment",
+        y = "Estimated effect (millions R$)",
+        caption = "Takeaway: No significant pre-trends; effect peaks at k=1, then gradually declines."
+    ) +
+    scale_x_continuous(breaks = seq(-6, 3, 1)) +
+    theme_book() +
+    theme(
+        axis.title = element_text(size = 17)
+    )
+
+print(p_event_study)
+```
+
+# PSM
+
+```{r}
+psm <- matchit(has_disablity ~ log_age + is_female +
+                 educ_level_school_or_less +
+                 educ_level_higher + educ_level_university + is_married,
+                  data = panel_full,
+                  #method = "full",
+                  #distance = "mahalanobis",
+                  #distance = "glm",
+                  #exact = ~log_age
+               )
+print(summary(psm, un = FALSE))
+```
+
+```{r}
+plot(psm, type = "jitter", interactive = FALSE)
+```
+
+
+```{r}
+plot(psm, type = "density", interactive = FALSE,
+     which.xs = ~log_age + is_female +
+                 educ_level_school_or_less +
+                 educ_level_higher + educ_level_university + is_married)
+```
+
+
+
+```{r}
+plot(summary(psm))
+```
+
+```{r}
+m.data <- match_data(psm)
+m.data
+```
+
+```{r}
+model6 <- feols(
+    wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    cluster = ~idind,
+    data = m.data
+)
+print(summary(model6))
+
+print(confint(model6, level = 0.95))
+```
+
+```{r}
+
+```
+
