@@ -1,0 +1,61 @@
+\section{Introduction}
+Time series, an ordered sequence of real-valued data, has been widely acknowledged as one of the most basic data formats. With the development of technologies in sensing, storage, networking, and data mining, massive raw data could be obtained, stored, and processed on the fly \cite{paparrizos2021vergedb, paparrizos2018fast}. Due to the advantage of chronological representation, we could see the application of time series in almost every scientific field or industry \cite{paparrizos2016detecting,paparrizos2016screening,goel2016social,mckeown2016predicting,jeung2010effective, liu2023amir,krishnan2019artificial,YANG2024acloserlook,li2023towards-noise}, including but not limited to: Environment \cite{iglesias2013analysis,kovsmelj1990cross,steinbach2003discovery}, Biology \cite{subhani2010multiple,wismuller2002cluster,zupko2023modeling}, Finance \cite{fu2001pattern,aghabozorgi2014stock,stetco2013fuzzy,guam2007cluster}, Psychology \cite{kurbalija2012time}, Artificial Intelligence \cite{tran2002fuzzy}. 
+%[\red{need to find more ref}]. 
+However, in the information era, increasing data sizes that contain thousands or even millions of dimensions have become increasingly common. 
+% the inherent complexity of which has become a new challenge of analyzing and understanding the latent relationship across time steps in different tasks: indexing, anomaly detection, clustering, classification, segmentation, forecasting. 
+This has introduced a new layer of complexity, requiring efficient adaptive solutions \cite{dziedzic2019band,jiang2020pids,jiang2021good,liu2021decomposed,liu2024adaedge} and presenting challenges in analyzing the underlying relationships between time series in various tasks, including indexing \cite{shieh2009isax, paparrizos2023querying, paparrizos2020debunking, paparrizos2022fast,paparrizos2023accelerating,d2024beyond}, anomaly detection \cite{sylligardos2023choose, boniol2021sand, boniol2021sandinaction, boniol2023new, boniol2022theseus, paparrizos2022tsb,paparrizos2022volume,liu2024elephant,boniol2024adecimo,boniol2024interactive,liu2024time}, clustering \cite{paparrizos2015k, paparrizos2017fast, paparrizos2023odyssey, bariya2021k}, classification \cite{shaw1992using, paparrizos2019grail}, and forecasting \cite{pavlidis2006financial}.
+
+
+%[\red{need to add more ref}].
+
+Clustering has been one of the earliest concepts developed in the field of unsupervised machine learning, which is shown to be one of the most efficient tools to help unveil the latent structure from the raw data. The main goal of clustering is to find a partition of various given objects, in which the similarity within each group is maximized, and minimized between groups. In other words, a group of ``similar" data samples is viewed as a cluster. Consequently, the characteristics within each cluster of objects consist of the \textit{pattern} in the dataset, i.e., common features shared within the cluster. For example, in computer vision tasks, the pattern can be a certain type of edge or color for similar objects \cite{lowe2004distinctive}, while in the time-series domain, the position of rapid growth or decline across time steps may have practical meaning. On the one hand, data samples sharing the same pattern would have a small distance and thus be partitioned into the same cluster. On the other hand, a good clustering strategy would in turn facilitate the search for these representative features. Figure \ref{pic:intro} depicts the examples of time-series clustering across different domains and applications.  
+
+
+As one of the most well-known clustering methods, the k-Means algorithm \cite{macqueen1967some} provides an expectation–maximization (EM) based strategy to search the medoids and clustering assignments based on Euclidean Distance for each iteration. Its good performance has enabled the application in different fields such as electrical engineering, computer science, biology, and finance.
+% [\red{need more references}]. 
+However, traditional methods such as k-Means have suffered from significant performance degradation in the time-series domain. 
+% [\red{add a reference}] [\red{add a figure, e.g., show two time-series samples, where Euclidean Distance would fail compared to other distance measures such as SBD}]. 
+Traditional measurements in Euclidean space have proven inefficient for addressing the variety of distortions in time-series data, including shifting, scaling, and occlusion \cite{paparrizos2015k},
+% [\red{add a figure to show different distortion of data}]
+which are common in real-world scenarios. To solve this problem, many methods have been proposed, which can offer invariances to the inherent distortions and robustness to noise or outliers. For example, Dynamic Time Warping (DTW) \cite{chu2002iterative} proposes an elastic measure to deal with the many-to-many alignment issue and finds the optimal warping path that minimizes the total distance between 2 sequences. In order to further reduce the computation cost, k-Shape \cite{paparrizos2015k} introduces (i) shape-based distance (SBD) with time complexity of $\mathcal{O}(n\log(n))$ and (ii) a novel centroid computation derived from an optimization problem, which achieves a significant improvement in clustering tasks \cite{paparrizos2015k,paparrizos2023odyssey}. In recent years, numerous clustering methods have emerged from the deep learning era, capturing significant attention and interest. Various unsupervised learning strategies, like contrastive learning, enable neural networks to generate representative features in a reduced dimension space, which significantly alleviates the pressure of the downstream tasks such as dissimilarity measure and centroid computation. Leveraging parallel computing strategies and advanced GPU resources, a clustering model can be trained and deployed in significantly less time.
+
+
+Past reviews \cite{aghabozorgi2015time,liao2005clustering} have explored time-series clustering algorithms proposed in decades and provided insights from various perspectives of views, i.e., data representation, dissimilarity measure, clustering methods, and evaluation metrics. However, many survey papers, as mentioned above, either only discuss the conventional time-series clustering before the deep learning era \cite{aghabozorgi2015time,liao2005clustering} or mainly focus on end-to-end deep representation learning \cite{lafabregue2021end}. \cite{alqahtani2021deep} reviews the conventional time-series clustering works and prior deep clustering methods. However, it mainly focuses on the case study in the context of biological time-series clustering without a comprehensive study on both sides as mentioned. To the best of our knowledge, this work is the first attempt to build a bridge between the conventional time-series clustering methods and the deep learning-based models, providing a novel and comprehensive taxonomy for various time-series clustering in each category. We anticipate that this work will provide valuable insights for next-generation clustering algorithm designs.
+
+
+
+% Past reviews \cite{aghabozorgi2015time,liao2005clustering} have provided classification of time-series clustering methods based on their approaches in processing data: whether the algorithm is based on raw time-series data or require feature engineering, whether the algorithm assumes a prior statistical model or not, whether the algorithm follows multiple steps or only one major step, etc. While these papers provide clear taxonomies of the clustering approaches, it is difficult for the readers to find a suitable algorithm for their specific dataset based on them. Moreover, in recent years, the addition of new methodologies like deep learning also awaits to be added to the taxonomy. Hence, this paper provides a new and updated perspective on time-series clustering in the new era of computing. \red{}
+
+% \textcolor{red}{Here is a table about time series application. need to collect more.}
+
+
+
+% \begin{table}[htp]
+	% \caption{Time series data application}
+	% \begin{tabular}[t]{p{0.15\textwidth}p{0.5\textwidth}p{0.3\textwidth}}
+		% \Xhline{2\arrayrulewidth} \addlinespace[0.1cm]
+		% Field & Application & Research Works \\ 
+		% \Xhline{2\arrayrulewidth} \addlinespace[0.1cm]
+		%  Environment and Urban & Discovering consumer power consumption patterns & \cite{kovsmelj1990cross}\cite{iglesias2013analysis}\\ 
+		
+		%  \addlinespace[0.1cm]
+		%  & Comparing population data throughout the century \\\addlinespace[0.1cm]
+		
+		%  Biology & Gene expression profile alignment & \cite{subhani2010multiple}\\\addlinespace[0.5cm]
+		
+		%  Finance     & Discovering patterns from stock time-series & \cite{fu2001pattern}\cite{aghabozorgi2014stock}\\\addlinespace[0.1cm] 
+		%   & Portfolio by return analysis  & \cite{stetco2013fuzzy} \\\addlinespace[0.1cm]
+		%   & Calculating efficient portfolio & \cite{guam2007cluster} \\ \addlinespace[0.1cm]
+		%  Medicine & Detecting brain activities & \cite{wismuller2002cluster} \\
+		%  \addlinespace[0.1cm]
+		%  Climate & Detecting the patterns in selected regions of the Earth’s oceans and atmosphere & \cite{steinbach2003discovery}\\
+		%  \addlinespace[0.1cm]
+		%  Speech & Speaker verification & \cite{tran2002fuzzy} \\
+		%  \addlinespace[0.1cm]
+		%  Psychology & Human behaviour analysis  & \cite{kurbalija2012time}\\
+		%  \addlinespace[0.1cm]
+		% \Xhline{2\arrayrulewidth} \addlinespace[0.1cm]
+		
+		% \end{tabular}
+	% \end{table}
+

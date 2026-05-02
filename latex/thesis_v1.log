@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.4.22)  23 APR 2026 20:29
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.4.22)  29 APR 2026 17:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2366,7 +2366,16 @@ File: hse_logo.png Graphic file (type bmp)
 \tf@toc=\write5
 \openout5 = `thesis_v1.toc'.
 
- [3] (./thesis_v1.aux)
+ [3] [4
+
+]
+Underfull \vbox (badness 4266) has occurred while \output is active []
+
+ [5]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [6]
+[7] (./thesis_v1.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2020/03/25>
@@ -2388,12 +2397,12 @@ Package logreq Info: Writing requests to 'thesis_v1.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 56717 strings out of 468168
- 1273466 string characters out of 5432815
- 2616294 words of memory out of 5000000
- 84649 multiletter control sequences out of 15000+600000
+ 56721 strings out of 468168
+ 1273506 string characters out of 5432815
+ 2633294 words of memory out of 5000000
+ 84653 multiletter control sequences out of 15000+600000
  630423 words of font info for 70 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  108i,11n,117p,11212b,4032s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on thesis_v1.pdf (3 pages).
+Output written on thesis_v1.pdf (7 pages).
