@@ -24,6 +24,8 @@ library(fixest)
 library(skimr)
 library(plm)
 library(modelsummary)
+library(MASS)
+library(e1071)
 ```
 
 
@@ -39,6 +41,26 @@ panel
 panel_full = read_parquet('../data/wages_working_data2.parquet')
 panel_full$log_age <- log(panel_full$age + 1)
 panel_full
+```
+
+```{r}
+weighted_table <- xtabs(inwgt ~ is_employed, data = panel_full)
+print(weighted_table)
+```
+
+```{r}
+weighted_table <- xtabs(~ gender, data = panel_full)
+print(weighted_table)
+```
+
+```{r}
+weighted_mean <- weighted.mean(panel_full$age, panel_full$inwgt)
+print(weighted_mean)
+
+# Weighted standard deviation (unbiased estimator)
+weighted_sd <- sqrt(sum(panel_full$inwgt * (panel_full$age - weighted_mean)^2) / 
+                    (sum(panel_full$inwgt) - 1))
+print(weighted_sd)
 ```
 
 
@@ -85,7 +107,7 @@ print(confint(model2, level = 0.95))
 ```
 
 ```{r}
-ggplot(panel, aes(x = factor(has_disability), y = wages)) +
+ggplot(panel_full, aes(x = factor(has_disability), y = wages)) +
   # Use geom_boxplot to create the plot
   geom_boxplot(alpha = 0.7, fill = "lightblue") + 
   
@@ -172,6 +194,7 @@ etable(model3,
 
 
 
+
 ```{r}
 coefplot(model3)
 ```
@@ -181,7 +204,8 @@ coefplot(model3)
 model4 <- feols(
     wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
     cluster = ~idind,
-    data = panel_full
+    data = panel_full,
+    weights=~inwgt
 )
 print(summary(model4))
 
@@ -383,6 +407,92 @@ p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
 print(p_event_study)
 ```
 
+
+
+```{r}
+hist(panel_full$wages, main = "Original Data", col = "lightblue")
+qqnorm(panel_full$wages, main = "Q-Q Plot (Original)")
+qqline(panel_full$wages, col = "red")
+```
+
+```{r}
+skew_val <- skewness(panel_full$wages)
+kurt_val <- kurtosis(panel_full$wages)
+```
+
+
+
+```{r}
+if(abs(skew_val) < 0.5 & abs(kurt_val - 3) < 1) {
+  cat("✅ Approximately normal - parametric tests are safe\n")
+} else if(abs(skew_val) < 1 & abs(kurt_val - 3) < 2) {
+  cat("⚠️ Mild deviation - parametric tests likely still valid\n")
+} else {
+  cat("❌ Significant deviation - consider robust methods\n")
+}
+```
+
+
+```{r}
+boxcox_result <- boxcox(lm(panel_full$wages + 1 ~ 1), lambda = seq(-2, 2, 0.1))
+boxcox_result
+```
+```{r}
+best_lambda <- boxcox_result$x[which.max(boxcox_result$y)]
+print(paste("Optimal lambda:", round(best_lambda, 3)))
+```
+
+```{r}
+transformed_data <- ((panel_full$wages + 1)^best_lambda - 1) / best_lambda
+```
+
+
+```{r}
+transformed_data <- sqrt(panel_full$wages + 1)
+dim(transformed_data)
+```
+```{r}
+skew_val <- skewness(transformed_data)
+kurt_val <- kurtosis(transformed_data)
+```
+
+
+
+```{r}
+if(abs(skew_val) < 0.5 & abs(kurt_val - 3) < 1) {
+  cat("✅ Approximately normal - parametric tests are safe\n")
+} else if(abs(skew_val) < 1 & abs(kurt_val - 3) < 2) {
+  cat("⚠️ Mild deviation - parametric tests likely still valid\n")
+} else {
+  cat("❌ Significant deviation - consider robust methods\n")
+}
+```
+
+
+```{r}
+dim(transformed_data)
+```
+
+
+```{r}
+hist(transformed_data, main = "Transformed (λ = 0.263)", col = "lightgreen")
+qqnorm(transformed_data, main = "Q-Q Plot (Transformed)")
+qqline(transformed_data, col = "blue")
+boxplot(transformed_data, main = "Boxplot (Transformed)", col = "lightgreen")
+```
+
+```{r}
+test_sample <- sample(transformed_data, 5000)
+
+# Test on sample
+ks_test <- ks.test(test_sample, "pnorm", 
+                   mean = mean(test_sample), 
+                   sd = sd(test_sample))
+
+print(ks_test)
+```
+
+
 # PSM
 
 ```{r}
@@ -390,52 +500,171 @@ names(panel)
 ```
 
 ```{r}
-?matchit
+skew_val <- skewness(panel_full$age)
+kurt_val <- kurtosis(panel_full$age)
 ```
 
 
 
 ```{r}
-psm <- matchit(has_disablity ~ log_age
+if(abs(skew_val) < 0.5 & abs(kurt_val - 3) < 1) {
+  cat("✅ Approximately normal - parametric tests are safe\n")
+} else if(abs(skew_val) < 1 & abs(kurt_val - 3) < 2) {
+  cat("⚠️ Mild deviation - parametric tests likely still valid\n")
+} else {
+  cat("❌ Significant deviation - consider robust methods\n")
+}
+```
+
+
+```{r}
+#par(mfrow = c(2, 1))
+hist(panel_full$age, main = "Original Data", col = "lightblue")
+qqnorm(panel_full$age, main = "Q-Q Plot (Original)")
+qqline(panel_full$age, col = "red")
+```
+
+```{r}
+boxcox_result <- boxcox(lm(panel_full$age ~ 1), lambda = seq(-2, 2, 0.1))
+boxcox_result
+```
+```{r}
+best_lambda <- boxcox_result$x[which.max(boxcox_result$y)]
+print(paste("Optimal lambda:", round(best_lambda, 3)))
+```
+
+```{r}
+transformed_data <- (panel_full$age^best_lambda - 1) / best_lambda
+```
+
+```{r}
+hist(transformed_data, main = "Transformed (λ = 0.263)", col = "lightgreen")
+qqnorm(transformed_data, main = "Q-Q Plot (Transformed)")
+qqline(transformed_data, col = "blue")
+boxplot(transformed_data, main = "Boxplot (Transformed)", col = "lightgreen")
+```
+
+```{r}
+panel_full$age_box_cox = (panel_full$age^best_lambda - 1) / best_lambda
+```
+
+
+```{r}
+test_sample <- sample(panel_full$age_box_cox, 5000)
+
+# Test on sample
+ks_test <- ks.test(test_sample, "pnorm", 
+                   mean = mean(test_sample), 
+                   sd = sd(test_sample))
+
+print(ks_test)
+```
+```{r}
+ks_test
+```
+
+
+```{r}
+psm_full_probit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + is_employed,
+                 is_married + gender + is_employed + harmfull_job,
                   data = panel_full ,
-                  method='optimal',
-                  #method = "full",
+                  #method='optimal',
+                  method = "full",
+                  link = "probit"
                   #distance = "mahalanobis",
                   #distance = "glm",
                   #exact = ~log_age
                )
-print(summary(psm, un = FALSE))
-```
-
-```{r}
-print(summary(psm))
-```
-
-
-
-```{r}
-plot(psm, type = "jitter", interactive = FALSE)
+print(summary(psm_full_probit, un = FALSE))
 ```
 
 
 ```{r}
-plot(psm, type = "density", interactive = FALSE, 
-     which.xs = ~ log_age 
+psm_full_logit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + is_employed
+                 is_married + gender + is_employed + harmfull_job,
+                  data = panel_full ,
+                  #method='optimal',
+                  method = "full",
+                  link = "logit"
+                  #distance = "mahalanobis",
+                  #distance = "glm",
+                  #exact = ~log_age
+               )
+print(summary(psm_full_logit, un = FALSE))
+```
+
+
+```{r}
+psm_nn <- matchit(has_disablity ~ age_box_cox
+                 + educ_level_university + is_female + 
+                 is_married + gender + is_employed + harmfull_job,
+                  data = panel_full ,
+                  #method='optimal',
+                  #method = "full",
+                  #link = "logit"
+                  #distance = "mahalanobis",
+                  #distance = "glm",
+                  #exact = ~log_age
+               )
+print(summary(psm_nn, un = FALSE))
+```
+
+```{r}
+love.plot(psm_full_probit, stats = c("m", "ks"), poly = 2, abs = TRUE,
+          weights = list(nn = psm_nn),
+          drop.distance = TRUE, thresholds = c(m = .1),
+          var.order = "unadjusted", binary = "std",
+          shapes = c("circle filled", "triangle", "square"), 
+          colors = c("red", "blue", "darkgreen"),
+          sample.names = c("Original", "Full Matching", "NN Matching"),
+          position = "bottom")
+```
+
+```{r}
+love.plot(psm_full_logit, stats = c("m", "ks"), poly = 2, abs = TRUE,
+          weights = list(nn = psm_nn),
+          drop.distance = TRUE, thresholds = c(m = .1),
+          var.order = "unadjusted", binary = "std",
+          shapes = c("circle filled", "triangle", "square"), 
+          colors = c("red", "blue", "darkgreen"),
+          sample.names = c("Original", "Full Matching", "NN Matching"),
+          position = "bottom")
+```
+
+
+```{r}
+love.plot(psm_full_probit, binary = "std")
+```
+
+
+
+```{r}
+plot(psm_full_probit, type = "density", interactive = FALSE, 
+     which.xs = ~ age_box_cox 
+                 + educ_level_university + is_female + 
+                 is_married + gender + is_employed + harmfull_job
                  )
 ```
 
 
 
 ```{r}
-plot(summary(psm))
+plot(summary(psm_full_logit))
 ```
 
 ```{r}
-m.data <- match_data(psm)
+love.plot(psm, binary = "std")
+```
+
+
+
+
+
+
+```{r}
+m.data <- match_data(psm_full_logit)
 m.data
 ```
 
@@ -443,6 +672,7 @@ m.data
 model6 <- feols(
     wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
     cluster = ~idind,
+    weights = ~ weights,
     data = m.data
 )
 print(summary(model6))
@@ -451,15 +681,34 @@ print(confint(model6, level = 0.95))
 ```
 
 ```{r}
+m.data <- m.data %>%
+  filter(year %in% c(2019, 2020))
 model7 <- feols(
     wages ~ has_disability | idind + year,
     cluster = ~idind,
-    data = m.data
+    data = m.data,
+    weights = ~ weights,
 )
 print(summary(model7))
 
 print(confint(model7, level = 0.95))
 ```
+
+```{r}
+modelsummary(model7,
+             output = "html",
+             title = "Regression Results",
+             digits = 3, stars=TRUE)
+```
+
+```{r}
+modelsummary(model6,
+             output = "html",
+             title = "Regression Results",
+             digits = 3, stars=TRUE)
+```
+
+
 
 ```{r}
 coef_df <- broom::tidy(model6, conf.int = TRUE) |>
@@ -535,5 +784,10 @@ p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
     )
 
 print(p_event_study)
+```
+
+
+```{r}
+write_parquet(m.data, '../data/wages_working_data_psm_full.parquet')
 ```
 
