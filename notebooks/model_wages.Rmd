@@ -547,7 +547,7 @@ names(panel)
 ```{r}
 psm_full_probit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + harmfull_job + is_employed,
+                 is_married + harmfull_job + is_employed,
                   data = panel_full ,
                   #method='optimal',
                   s.weights = ~ inwgt,
@@ -564,7 +564,7 @@ print(summary(psm_full_probit, un = FALSE))
 ```{r}
 psm_full_logit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + harmfull_job + is_employed,
+                 is_married + harmfull_job + is_employed,
                   data = panel_full ,
                   #method='optimal',
                   s.weights = ~ inwgt,
@@ -585,12 +585,15 @@ psm_full_logit
 summary(psm_full_logit, un = FALSE)
 ```
 
+```{r}
+psm_full_logit$
+```
 
 
 ```{r}
 psm_nn <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + harmfull_job + is_employed,
+                 is_married + harmfull_job + is_employed,
                   data = panel_full ,
                   s.weights = ~ inwgt,
                   #method='optimal',
