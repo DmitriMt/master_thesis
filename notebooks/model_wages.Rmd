@@ -26,20 +26,27 @@ library(plm)
 library(modelsummary)
 library(MASS)
 library(e1071)
+library(modelsummary)
 ```
 
-
 ```{r}
-panel = read_parquet('../data/wages_working_data2.parquet')
-panel <- panel %>%
+
+panel = read_parquet('../data/wages_working_data3.parquet')
+panel = panel %>%
   filter(year %in% c(2019, 2020))
-panel$log_age <- log(panel$age + 1)
+panel$period_relevance = panel$period_relevance - 1
+#panel_full$log_age <- log(panel_full$age + 1)
+#panel_full$wages <- panel_full$wages + panel_full$iea_income
+#panel_full$wages <- panel_full$wages - panel_full$iea_income
 panel
 ```
 
+
 ```{r}
-panel_full = read_parquet('../data/wages_working_data2.parquet')
-panel_full$log_age <- log(panel_full$age + 1)
+panel_full = read_parquet('../data/wages_working_data3.parquet')
+panel_full$period_relevance = panel_full$period_relevance - 1
+#panel_full$log_age <- log(panel_full$age + 1)
+#panel_full$wages <- panel_full$wages - panel_full$iea_income
 panel_full
 ```
 
@@ -66,26 +73,18 @@ print(weighted_sd)
 
 ```{r}
 model1 <- feols(
-    wages ~ has_disability | idind + year,
+    wages ~ has_disability_period | idind + year,
     cluster = ~idind,
-    data = panel
+    data = panel ,
+   #weights= ~ inwgt,
 )
 print(summary(model1))
 
 print(confint(model1, level = 0.95))
 ```
 
-```{r}
-etable(model1, 
-       tex = TRUE,
-       title = "Regression Results",
-       label = "tab:results",
-       digits = 3)
-```
 
 ```{r}
-library(modelsummary)
-
 # Direct HTML output
 modelsummary(model1,
              output = "html",
@@ -97,9 +96,10 @@ modelsummary(model1,
 
 ```{r}
 model2 <- feols(
-    log(wages + 1) ~ has_disability | idind + year,
+    log(wages + 1) ~ has_disability_period | idind + year,
     cluster = ~idind,
-    data = panel
+    data = panel,
+    #weights= ~ inwgt
 )
 print(summary(model2))
 
@@ -174,7 +174,7 @@ ggplot(panel, aes(x = factor(has_disability), y = log(age))) +
 
 ```{r}
 model3 <- feols(
-    log(wages + 1) ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    log(wages + 1) ~ i(period_relevance, has_disability_period, ref = -1) | idind + year,
     cluster = ~idind,
     data = panel_full
 )
@@ -184,13 +184,6 @@ print(confint(model3, level = 0.95))
 ```
 
 
-```{r}
-etable(model3, 
-       tex = TRUE,
-       title = "Regression Results",
-       label = "tab:results",
-       digits = 3)
-```
 
 
 
@@ -202,7 +195,7 @@ coefplot(model3)
 
 ```{r}
 model4 <- feols(
-    wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    wage_j1 ~ i(period_relevance, has_disability_period, ref = -1) | idind + year,
     cluster = ~idind,
     data = panel_full,
     weights=~inwgt
@@ -212,12 +205,12 @@ print(summary(model4))
 print(confint(model4, level = 0.95))
 ```
 
+
 ```{r}
-etable(model4, 
-       tex = TRUE,
-       title = "Regression Results",
-       label = "tab:results",
-       digits = 3)
+modelsummary(
+  list(model4),stars=TRUE,
+  output = "../notebooks/my_models.docx"
+)
 ```
 
 
@@ -326,35 +319,18 @@ print(p_event_study)
 ```
 
 ```{r}
-coef_df
+library(writexl)
+write_xlsx(coef_df, '../data/coefficients_event_study2.xlsx')
 ```
 
 
+```{r}
+library(readxl)
+coef_df <- read_excel("../data/coefficients_event_study2.xlsx")
+coef_df
+```
 
 ```{r}
-coef_df <- broom::tidy(model3, conf.int = TRUE) |>
-    filter(str_detect(term, "period_relevance")) |>
-    mutate(
-        relative_period = as.numeric(str_extract(term, "-?\\d+")),
-        type = ifelse(relative_period < -1, "Pre-treatment", "Post-treatment")
-    )
-
-# Add the reference period (k = -1) with zero effect
-coef_df <- bind_rows(
-    coef_df,
-    tibble(
-        term = "period_relevance::-1:treatment",
-        estimate = 0,
-        std.error = 0,
-        conf.low = 0,
-        conf.high = 0,
-        relative_period = -1,
-        type = "Pre-treatment"
-    )
-) |>
-    arrange(relative_period)
-
-# Identify max effect for annotation
 max_effect_row <- coef_df |> filter(estimate == max(estimate))
 
 # Plot
@@ -378,25 +354,25 @@ p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
     geom_point(size = 3, color = book_colors$primary) +
     # Annotations
     annotate("text",
-        x = -3.5, y = max(coef_df$conf.high) * 0.7,
-        label = "Pre-treatment\n(should be ~0)",
+        x = -1.5, y = max(coef_df$conf.high) * 0.7,
+        label = "pre-pandemic",
         color = book_colors$muted,
         size = 5.5,
         fontface = "italic"
     ) +
     annotate("text",
-        x = 2.5, y = max(coef_df$conf.high) * 0.95,
-        label = "Post-treatment\n(treatment effect)",
+        x = 2.5, y = max(coef_df$conf.high) * 0.7,
+        label = "post-pandemic",
         color = book_colors$primary,
         size = 5.5,
         fontface = "italic"
     ) +
     labs(
-        title = "Event plot: effect of pandemic on wages over time",
-        subtitle = "Reference period: k = -1 (one period before treatment)",
-        x = "Periods relative to treatment",
-        y = "Estimated effect (millions R$)",
-        caption = "Takeaway: No significant pre-trends; effect peaks at k=1, then gradually declines."
+        title = "effect of COVID-19 on earnings over time",
+        subtitle = "period relevance k = -1 (2019)",
+        x = "period relative to the event",
+        y = "estimated effect (rubles)",
+        #caption = "Takeaway: No significant pre-trends; effect peaks at k=1, then gradually declines."
     ) +
     scale_x_continuous(breaks = seq(-6, 3, 1)) +
     theme_book() +
@@ -406,6 +382,7 @@ p_event_study <- ggplot(coef_df, aes(x = relative_period, y = estimate)) +
 
 print(p_event_study)
 ```
+
 
 
 
@@ -562,18 +539,22 @@ print(ks_test)
 ```{r}
 ks_test
 ```
+```{r}
+names(panel)
+```
 
 
 ```{r}
 psm_full_probit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + is_employed + harmfull_job,
+                 is_married + gender + harmfull_job + is_employed,
                   data = panel_full ,
                   #method='optimal',
+                  s.weights = ~ inwgt,
                   method = "full",
-                  link = "probit"
+                  link = "probit",
                   #distance = "mahalanobis",
-                  #distance = "glm",
+                  distance = "glm",
                   #exact = ~log_age
                )
 print(summary(psm_full_probit, un = FALSE))
@@ -583,24 +564,35 @@ print(summary(psm_full_probit, un = FALSE))
 ```{r}
 psm_full_logit <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + is_employed + harmfull_job,
+                 is_married + gender + harmfull_job + is_employed,
                   data = panel_full ,
                   #method='optimal',
+                  s.weights = ~ inwgt,
                   method = "full",
-                  link = "logit"
+                  link = "logit",
                   #distance = "mahalanobis",
-                  #distance = "glm",
+                  distance = "glm",
                   #exact = ~log_age
                )
 print(summary(psm_full_logit, un = FALSE))
 ```
 
+```{r}
+psm_full_logit
+```
+
+```{r}
+summary(psm_full_logit, un = FALSE)
+```
+
+
 
 ```{r}
 psm_nn <- matchit(has_disablity ~ age_box_cox
                  + educ_level_university + is_female + 
-                 is_married + gender + is_employed + harmfull_job,
+                 is_married + gender + harmfull_job + is_employed,
                   data = panel_full ,
+                  s.weights = ~ inwgt,
                   #method='optimal',
                   #method = "full",
                   #link = "logit"
@@ -610,6 +602,8 @@ psm_nn <- matchit(has_disablity ~ age_box_cox
                )
 print(summary(psm_nn, un = FALSE))
 ```
+
+
 
 ```{r}
 love.plot(psm_full_probit, stats = c("m", "ks"), poly = 2, abs = TRUE,
@@ -635,7 +629,7 @@ love.plot(psm_full_logit, stats = c("m", "ks"), poly = 2, abs = TRUE,
 
 
 ```{r}
-love.plot(psm_full_probit, binary = "std")
+love.plot(psm_full_logit, binary = "std")
 ```
 
 
@@ -670,7 +664,7 @@ m.data
 
 ```{r}
 model6 <- feols(
-    wages ~ i(period_relevance, has_disability, ref = -1) | idind + year,
+    wages ~ i(period_relevance, has_disability_period, ref = -1) | idind + year,
     cluster = ~idind,
     weights = ~ weights,
     data = m.data
@@ -681,12 +675,12 @@ print(confint(model6, level = 0.95))
 ```
 
 ```{r}
-m.data <- m.data %>%
+m.data_small <- m.data %>%
   filter(year %in% c(2019, 2020))
 model7 <- feols(
-    wages ~ has_disability | idind + year,
+    wages ~ has_disability_period | idind + year,
     cluster = ~idind,
-    data = m.data,
+    data = m.data_small,
     weights = ~ weights,
 )
 print(summary(model7))
@@ -695,11 +689,19 @@ print(confint(model7, level = 0.95))
 ```
 
 ```{r}
-modelsummary(model7,
+ms <- modelsummary(model7,
              output = "html",
              title = "Regression Results",
              digits = 3, stars=TRUE)
+ms
 ```
+```{r}
+modelsummary(
+  list(model7),
+  # output = "../notebooks/my_models.docx"
+)
+```
+
 
 ```{r}
 modelsummary(model6,
@@ -790,4 +792,15 @@ print(p_event_study)
 ```{r}
 write_parquet(m.data, '../data/wages_working_data_psm_full.parquet')
 ```
+vignette("MatchIt") for an introduction to matching with MatchIt
+
+vignette("matching-methods") for descriptions of the variety of matching methods and options available
+
+vignette("assessing-balance") for information on assessing the quality of a matching specification
+
+vignette("estimating-effects") for instructions on how to estimate treatment effects after matching
+
+vignette("sampling-weights") for a guide to using MatchIt with sampling weights.
+
+
 
