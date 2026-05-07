@@ -360,94 +360,222 @@ m.data
 
 
 ```{r}
+library("MatchIt")
+data("lalonde", package = "MatchIt")
+lalonde
 ```
 
 
 ```{r}
+#1:1 NN matching w/ replacement on a logistic regression PS
+m.out <- matchit(treat ~ age + educ + race + married + 
+                   nodegree + re74 + re75, data = lalonde,
+                 replace = TRUE)
+m.out
 ```
 
 
 ```{r}
+print(summary(m.out, addlvariables = ~ I(age^2) + I(re74==0) + 
+          I(re75==0) + educ:race))
 ```
 
 
 ```{r}
+m.sum <- summary(m.out, addlvariables = ~ I(age^2) + I(re74==0) + 
+                   I(re75==0) + educ:race)
+plot(m.sum, var.order = "unmatched")
 ```
 
 
 ```{r}
+plot(m.out, type = "qq", which.xs = ~age + nodegree + re74)
 ```
 
 
 ```{r}
+plot(m.out, type = "ecdf", which.xs = ~educ + married + re75)
 ```
 
 
 ```{r}
+plot(m.out, type = "density", which.xs = ~age + educ + race)
 ```
 
 
 ```{r}
+s.out <- matchit(treat ~ age + educ + race + married + 
+                   nodegree + re74 + re75, data = lalonde,
+                 method = "subclass", subclass = 4)
+s.out
 ```
 
 
 ```{r}
+print(summary(s.out))
 ```
 
 
 ```{r}
+s <- summary(s.out, subclass = TRUE)
+plot(s, var.order = "unmatched", abs = FALSE)
 ```
 
 
 ```{r}
+plot(s.out, type = "density", which.xs = ~educ + married + re75,
+     subclass = 1)
 ```
 
 
 ```{r}
+library("cobalt")
 ```
 
 
 ```{r}
+bal.tab(m.out, un = TRUE, stats = c("m", "v", "ks"))
 ```
 
 
 ```{r}
+m.out2 <- matchit(treat ~ age + educ + race + married + 
+                   nodegree + re74 + re75, data = lalonde)
+
+#Balance on covariates after full and NN matching
+bal.tab(treat ~ age + educ + race + married + 
+          nodegree + re74 + re75, data = lalonde, 
+        un = TRUE, weights = list(full = m.out, nn = m.out2))
 ```
 
 
 ```{r}
+love.plot(m.out, binary = "std")
 ```
 
 
 ```{r}
+love.plot(m.out, stats = c("m", "ks"), poly = 2, abs = TRUE,
+          weights = list(nn = m.out2),
+          drop.distance = TRUE, thresholds = c(m = .1),
+          var.order = "unadjusted", binary = "std",
+          shapes = c("circle filled", "triangle", "square"), 
+          colors = c("red", "blue", "darkgreen"),
+          sample.names = c("Original", "Full Matching", "NN Matching"),
+          position = "bottom")
 ```
 
 
 ```{r}
+gen_X <- function(n) {
+  X <- matrix(rnorm(9 * n), nrow = n, ncol = 9)
+  X[,5] <- as.numeric(X[,5] < .5)
+  X
+}
+
+#~20% treated
+gen_A <- function(X) {
+  LP_A <- - 1.2 + log(2)*X[,1] - log(1.5)*X[,2] + log(2)*X[,4] - log(2.4)*X[,5] + log(2)*X[,7] - log(1.5)*X[,8]
+  P_A <- plogis(LP_A)
+  rbinom(nrow(X), 1, P_A)
+}
+
+# Continuous outcome
+gen_Y_C <- function(A, X) {
+  2*A + 2*X[,1] + 2*X[,2] + 2*X[,3] + 1*X[,4] + 2*X[,5] + 1*X[,6] + rnorm(length(A), 0, 5)
+}
+#Conditional:
+#  MD: 2
+#Marginal:
+#  MD: 2
+
+# Binary outcome
+gen_Y_B <- function(A, X) {
+  LP_B <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  P_B <- plogis(LP_B)
+  rbinom(length(A), 1, P_B)
+}
+#Conditional:
+#  OR:   2.4
+#  logOR: .875
+#Marginal:
+#  RD:    .144
+#  RR:   1.54
+#  logRR: .433
+#  OR:   1.92
+#  logOR  .655
+
+# Survival outcome
+gen_Y_S <- function(A, X) {
+  LP_S <- -2 + log(2.4)*A + log(2)*X[,1] + log(2)*X[,2] + log(2)*X[,3] + log(1.5)*X[,4] + log(2.4)*X[,5] + log(1.5)*X[,6]
+  sqrt(-log(runif(length(A)))*2e4*exp(-LP_S))
+}
+#Conditional:
+#  HR:   2.4
+#  logHR: .875
+#Marginal:
+#  HR:   1.57
+#  logHR: .452
+
+set.seed(19599)
+
+n <- 2000
+X <- gen_X(n)
+A <- gen_A(X)
+
+Y_C <- gen_Y_C(A, X)
+Y_B <- gen_Y_B(A, X)
+Y_S <- gen_Y_S(A, X)
+
+d <- data.frame(A, X, Y_C, Y_B, Y_S)
+d
 ```
 
 
 ```{r}
+library("MatchIt")
+library("marginaleffects")
 ```
 
 
 ```{r}
+mV <- matchit(A ~ X1 + X2 + X3 + X4 + X5 + 
+                X6 + X7 + X8 + X9,
+              data = d,
+              ratio = 2,
+              max.controls = 4)
+mV
 ```
 
 
 ```{r}
+md <- match_data(mV)
+
+head(md)
 ```
 
 
 ```{r}
+fit1 <- lm(Y_C ~ A * (X1 + X2 + X3 + X4 + X5 + 
+                        X6 + X7 + X8 + X9),
+           data = md,
+           weights = weights)
 ```
 
 
 ```{r}
+avg_comparisons(fit1,
+                variables = "A",
+                vcov = ~subclass,
+                newdata = subset(A == 1))
 ```
 
 
 ```{r}
+avg_comparisons(fit1,
+                variables = "A",
+                vcov = ~subclass,
+                newdata = subset(A == 1))
 ```
 
 
