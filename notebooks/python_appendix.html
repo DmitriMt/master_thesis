@@ -1,0 +1,281 @@
+<div style="max-width:100%;overflow:auto">
+<p style="font-family:inherit;margin:0 0 0.25em"><strong>python_code_appendix.py</strong></p>
+<pre style="white-space:pre-wrap;word-wrap:break-word;background-color:#1F1F1F;color:#CCCCCC"><code><span><span style="color:#6A9955"># Library imports</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> matplotlib.pyplot </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> plt</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> numpy </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> np</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> pandas </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> pd</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> polars </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> pl</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> seaborn </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> sns</span></span>
+<span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> statsmodels.formula.api </span><span style="color:#C586C0">as</span><span style="color:#CCCCCC"> smf</span></span>
+<span><span style="color:#C586C0">from</span><span style="color:#CCCCCC"> linearmodels.panel </span><span style="color:#C586C0">import</span><span style="color:#CCCCCC"> PanelOLS</span></span>
+<span></span>
+<span><span style="color:#6A9955"># Data import</span></span>
+<span><span style="color:#CCCCCC">panel </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.read_parquet(</span><span style="color:#CE9178">"../data/working_data.parquet"</span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#6A9955"># Plot average wages year comparison</span></span>
+<span><span style="color:#CCCCCC">df_wages </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> (</span></span>
+<span><span style="color:#CCCCCC">    panel[[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"has_disablity"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"wages"</span><span style="color:#CCCCCC">]]</span></span>
+<span><span style="color:#CCCCCC">    .groupby([</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"has_disablity"</span><span style="color:#CCCCCC">])</span></span>
+<span><span style="color:#CCCCCC">    .mean()</span></span>
+<span><span style="color:#CCCCCC">    .reset_index()</span></span>
+<span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">df_wages[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.to_datetime(df_wages[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">format</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"%Y"</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">df_wages[</span><span style="color:#CE9178">"has_disablity"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> df_wages[</span><span style="color:#CE9178">"has_disablity"</span><span style="color:#CCCCCC">].map({</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">: </span><span style="color:#CE9178">"No"</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">1</span><span style="color:#CCCCCC">: </span><span style="color:#CE9178">"Yes"</span><span style="color:#CCCCCC">})</span></span>
+<span><span style="color:#CCCCCC">df_wages </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> df_wages.pivot(</span><span style="color:#9CDCFE">index</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">columns</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"has_disablity"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">values</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"wages"</span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">colors </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> {</span><span style="color:#CE9178">"Yes"</span><span style="color:#CCCCCC">: </span><span style="color:#CE9178">"steelblue"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"No"</span><span style="color:#CCCCCC">: </span><span style="color:#CE9178">"lightblue"</span><span style="color:#CCCCCC">}</span></span>
+<span><span style="color:#CCCCCC">fig, ax </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> plt.subplots(</span><span style="color:#9CDCFE">figsize</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">(</span><span style="color:#B5CEA8">12</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">))</span></span>
+<span></span>
+<span><span style="color:#C586C0">for</span><span style="color:#CCCCCC"> column </span><span style="color:#C586C0">in</span><span style="color:#CCCCCC"> df_wages.columns:</span></span>
+<span><span style="color:#CCCCCC">    ax.plot(</span></span>
+<span><span style="color:#CCCCCC">        df_wages.index,</span></span>
+<span><span style="color:#CCCCCC">        df_wages[column],</span></span>
+<span><span style="color:#9CDCFE">        marker</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"o"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">2.5</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        markersize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">8</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">colors.get(column, </span><span style="color:#CE9178">"#3498db"</span><span style="color:#CCCCCC">),</span></span>
+<span><span style="color:#9CDCFE">        label</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">f</span><span style="color:#CE9178">"Has Disability: </span><span style="color:#569CD6">{</span><span style="color:#CCCCCC">column</span><span style="color:#569CD6">}</span><span style="color:#CE9178">"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        markeredgecolor</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"white"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        markeredgewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.9</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">ax.set_title(</span></span>
+<span><span style="color:#569CD6">    f</span><span style="color:#CE9178">"average Wages by year comparison"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">16</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    fontweight</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"bold"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    pad</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">20</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#6A9955">    # fontfamily='serif'</span></span>
+<span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">ax.axvline(</span></span>
+<span><span style="color:#9CDCFE">    x</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">pd.Timestamp(</span><span style="color:#CE9178">"2019-01-01"</span><span style="color:#CCCCCC">),</span></span>
+<span><span style="color:#9CDCFE">    color</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"gray"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    label</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"period of interest"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.7</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">ax.axvline(</span></span>
+<span><span style="color:#9CDCFE">    x</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">pd.Timestamp(</span><span style="color:#CE9178">"2020-01-01"</span><span style="color:#CCCCCC">), </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"gray"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.7</span></span>
+<span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">ax.set_xlabel(</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">12</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">fontweight</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"semibold"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">labelpad</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">10</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">ax.set_ylabel(</span><span style="color:#569CD6">f</span><span style="color:#CE9178">"average Wages"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">12</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">fontweight</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"semibold"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">labelpad</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">10</span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">legend </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> ax.legend(</span></span>
+<span><span style="color:#9CDCFE">    title</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"Has Disability"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    title_fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">12</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">11</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    loc</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"best"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    frameon</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    fancybox</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    shadow</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    edgecolor</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"#cccccc"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    facecolor</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"white"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">legend.get_title().set_fontweight(</span><span style="color:#CE9178">"bold"</span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#6A9955"># Data manipulation</span></span>
+<span><span style="color:#CCCCCC">panel_2019_2020 </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel.copy()</span></span>
+<span><span style="color:#CCCCCC">panel_2019_2020[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.to_datetime(panel_2019_2020[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">format</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"%Y"</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">panel_2019_2020_ids </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel_2019_2020[</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">]</span></span>
+<span><span style="color:#CCCCCC">panel_2019_2020 </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel_2019_2020.set_index([</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">])</span></span>
+<span></span>
+<span><span style="color:#6A9955"># Serial correlation test computation</span></span>
+<span><span style="color:#CCCCCC">fixed_effects_ind_model </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> PanelOLS.from_formula(</span></span>
+<span><span style="color:#CE9178">    "wages ~ period + EntityEffects"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">data</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">panel_2019_2020</span></span>
+<span><span style="color:#CCCCCC">).fit()</span></span>
+<span><span style="color:#DCDCAA">print</span><span style="color:#CCCCCC">(fixed_effects_ind_model.summary)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">fe_resid </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> fe_model.resids</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">resid_df </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.DataFrame(</span></span>
+<span><span style="color:#CCCCCC">    {</span></span>
+<span><span style="color:#CE9178">        "idind"</span><span style="color:#CCCCCC">: panel_2019_2020.reset_index()[</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">].values,</span></span>
+<span><span style="color:#CE9178">        "year"</span><span style="color:#CCCCCC">: panel_2019_2020.reset_index()[</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">].values,</span></span>
+<span><span style="color:#CE9178">        "resid"</span><span style="color:#CCCCCC">: fe_resid.values,</span></span>
+<span><span style="color:#CCCCCC">    }</span></span>
+<span><span style="color:#CCCCCC">).sort_values([</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">])</span></span>
+<span></span>
+<span></span>
+<span><span style="color:#CCCCCC">resid_df[</span><span style="color:#CE9178">"resid_diff"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> resid_df.groupby(</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">)[</span><span style="color:#CE9178">"resid"</span><span style="color:#CCCCCC">].diff()</span></span>
+<span><span style="color:#CCCCCC">resid_df[</span><span style="color:#CE9178">"resid_diff_lag"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> resid_df.groupby(</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">)[</span><span style="color:#CE9178">"resid_diff"</span><span style="color:#CCCCCC">].shift(</span><span style="color:#B5CEA8">1</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">resid_df </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> resid_df.dropna()</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">model_ols </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> smf.ols(</span><span style="color:#CE9178">"resid_diff ~ resid_diff_lag"</span><span style="color:#CCCCCC">, resid_df).fit(</span><span style="color:#9CDCFE">cov_type</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"HC1"</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#DCDCAA">print</span><span style="color:#CCCCCC">(model_ols.summary2())</span></span>
+<span></span>
+<span></span>
+<span><span style="color:#6A9955"># Difference in differences TWFE model computation</span></span>
+<span><span style="color:#CCCCCC">model_twfe </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> PanelOLS.from_formula(</span></span>
+<span><span style="color:#CE9178">    "wages ~ I(has_disability * period) + EntityEffects + TimeEffects"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">    data</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">panel_2019_2020,</span></span>
+<span><span style="color:#CCCCCC">).fit(</span><span style="color:#9CDCFE">cov_type</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"clustered"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">cluster_entity</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">group_debias</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">False</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#DCDCAA">print</span><span style="color:#CCCCCC">(model_twfe.summary)</span></span>
+<span></span>
+<span><span style="color:#6A9955"># Dynamic difference in differences TWFE model computation</span></span>
+<span><span style="color:#CCCCCC">panel </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pl.read_parquet(</span><span style="color:#CE9178">"../data/working_data_multiple_periods.parquet"</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">panel_2014_2024 </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> (</span></span>
+<span><span style="color:#CCCCCC">    panel.filter(</span></span>
+<span><span style="color:#CCCCCC">        (pl.col(</span><span style="color:#CE9178">"period_relevance"</span><span style="color:#CCCCCC">) </span><span style="color:#D4D4D4">></span><span style="color:#D4D4D4"> -</span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">) </span><span style="color:#D4D4D4">&#x26;</span><span style="color:#CCCCCC"> (pl.col(</span><span style="color:#CE9178">"period_relevance"</span><span style="color:#CCCCCC">) </span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#B5CEA8"> 5</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ).with_columns(pl.col(</span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">).cast(pl.Int32).cast(pl.String).str.to_date(</span><span style="color:#CE9178">"%Y"</span><span style="color:#CCCCCC">))</span></span>
+<span><span style="color:#CCCCCC">).to_pandas()</span></span>
+<span><span style="color:#CCCCCC">panel_2014_2024_dta </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel_2014_2024.set_index([</span><span style="color:#CE9178">"idind"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"year"</span><span style="color:#CCCCCC">])</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">event_study_terms </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> []</span></span>
+<span><span style="color:#C586C0">for</span><span style="color:#CCCCCC"> p </span><span style="color:#C586C0">in</span><span style="color:#DCDCAA"> sorted</span><span style="color:#CCCCCC">(panel_2014_2024_dta[</span><span style="color:#CE9178">"period_relevance"</span><span style="color:#CCCCCC">].unique()):</span></span>
+<span><span style="color:#C586C0">    if</span><span style="color:#CCCCCC"> p </span><span style="color:#D4D4D4">!=</span><span style="color:#B5CEA8"> 0</span><span style="color:#CCCCCC">:</span></span>
+<span><span style="color:#CCCCCC">        col_name </span><span style="color:#D4D4D4">=</span><span style="color:#569CD6"> f</span><span style="color:#CE9178">"rel_period_</span><span style="color:#569CD6">{</span><span style="color:#CCCCCC">p</span><span style="color:#569CD6">}</span><span style="color:#CE9178">_treated"</span></span>
+<span><span style="color:#CCCCCC">        panel_2014_2024_dta[col_name] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> (</span></span>
+<span><span style="color:#CCCCCC">            (panel_2014_2024_dta[</span><span style="color:#CE9178">"period_relevance"</span><span style="color:#CCCCCC">].values </span><span style="color:#D4D4D4">==</span><span style="color:#CCCCCC"> p)</span></span>
+<span><span style="color:#D4D4D4">            &#x26;</span><span style="color:#CCCCCC"> (panel_2014_2024_dta[</span><span style="color:#CE9178">"has_disability_period"</span><span style="color:#CCCCCC">].values </span><span style="color:#D4D4D4">==</span><span style="color:#B5CEA8"> 1</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">        ).astype(</span><span style="color:#4EC9B0">int</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">        event_study_terms.append(col_name)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">X_event </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel_2014_2024_dta[event_study_terms]</span></span>
+<span><span style="color:#CCCCCC">y_event </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> panel_2014_2024_dta[</span><span style="color:#CE9178">"wages"</span><span style="color:#CCCCCC">]</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">event_study_model </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> PanelOLS(</span></span>
+<span><span style="color:#CCCCCC">    y_event, X_event, </span><span style="color:#9CDCFE">entity_effects</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">check_rank</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span></span>
+<span><span style="color:#CCCCCC">).fit(</span><span style="color:#9CDCFE">cov_type</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"clustered"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">cluster_entity</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#DCDCAA">print</span><span style="color:#CCCCCC">(event_study_model.summary)</span></span>
+<span></span>
+<span></span>
+<span><span style="color:#6A9955"># Dynamic difference in differences TWFE model plot</span></span>
+<span><span style="color:#569CD6">def</span><span style="color:#DCDCAA"> plot_event_margins</span><span style="color:#CCCCCC">(</span><span style="color:#9CDCFE">model</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">measure_unit</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"RUB"</span><span style="color:#CCCCCC">):</span></span>
+<span><span style="color:#CCCCCC">    coef_names </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> [</span></span>
+<span><span style="color:#CCCCCC">        col </span><span style="color:#C586C0">for</span><span style="color:#CCCCCC"> col </span><span style="color:#C586C0">in</span><span style="color:#CCCCCC"> model.params.index </span><span style="color:#C586C0">if</span><span style="color:#CCCCCC"> col.startswith(</span><span style="color:#CE9178">"period_relevance"</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ]</span></span>
+<span><span style="color:#CCCCCC">    coefs </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> model.params[coef_names]</span></span>
+<span><span style="color:#CCCCCC">    std_errors </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> model.std_errors[coef_names]</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    rel_periods </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> [</span><span style="color:#4EC9B0">int</span><span style="color:#CCCCCC">(re.search(</span><span style="color:#569CD6">r</span><span style="color:#D16969">"-</span><span style="color:#D7BA7D">?</span><span style="color:#D16969">\d</span><span style="color:#D7BA7D">+</span><span style="color:#D16969">"</span><span style="color:#CCCCCC">, name).group()) </span><span style="color:#C586C0">for</span><span style="color:#CCCCCC"> name </span><span style="color:#C586C0">in</span><span style="color:#CCCCCC"> coef_names]</span></span>
+<span><span style="color:#CCCCCC">    coef_df </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.DataFrame(</span></span>
+<span><span style="color:#CCCCCC">        {</span></span>
+<span><span style="color:#CE9178">            "relative_period"</span><span style="color:#CCCCCC">: rel_periods,</span></span>
+<span><span style="color:#CE9178">            "estimate"</span><span style="color:#CCCCCC">: coefs.values,</span></span>
+<span><span style="color:#CE9178">            "std_error"</span><span style="color:#CCCCCC">: std_errors.values,</span></span>
+<span><span style="color:#CCCCCC">        }</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    coef_df[</span><span style="color:#CE9178">"conf_low"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8"> 1.96</span><span style="color:#D4D4D4"> *</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"std_error"</span><span style="color:#CCCCCC">]</span></span>
+<span><span style="color:#CCCCCC">    coef_df[</span><span style="color:#CE9178">"conf_high"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">+</span><span style="color:#B5CEA8"> 1.96</span><span style="color:#D4D4D4"> *</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"std_error"</span><span style="color:#CCCCCC">]</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    coef_df[</span><span style="color:#CE9178">"type"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> np.where(</span></span>
+<span><span style="color:#CCCCCC">        coef_df[</span><span style="color:#CE9178">"relative_period"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#B5CEA8"> 0</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"Pre-treatment"</span><span style="color:#CCCCCC">, </span><span style="color:#CE9178">"Post-treatment"</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    ref_row </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.DataFrame(</span></span>
+<span><span style="color:#CCCCCC">        {</span></span>
+<span><span style="color:#CE9178">            "relative_period"</span><span style="color:#CCCCCC">: [</span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8">1</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CE9178">            "estimate"</span><span style="color:#CCCCCC">: [</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CE9178">            "std_error"</span><span style="color:#CCCCCC">: [</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CE9178">            "conf_low"</span><span style="color:#CCCCCC">: [</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CE9178">            "conf_high"</span><span style="color:#CCCCCC">: [</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CE9178">            "type"</span><span style="color:#CCCCCC">: [</span><span style="color:#CE9178">"Pre-treatment"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CCCCCC">        }</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    coef_df </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> pd.concat([coef_df, ref_row], </span><span style="color:#9CDCFE">ignore_index</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    coef_df </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df.sort_values(</span><span style="color:#CE9178">"relative_period"</span><span style="color:#CCCCCC">).reset_index(</span><span style="color:#9CDCFE">drop</span><span style="color:#D4D4D4">=</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">)</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    max_effect_row </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df.loc[coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">].idxmax()]</span></span>
+<span><span style="color:#CCCCCC">    max_conf_high </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"conf_high"</span><span style="color:#CCCCCC">].max()</span></span>
+<span><span style="color:#CCCCCC">    min_conf_low </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"conf_low"</span><span style="color:#CCCCCC">].min()</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    fig, ax </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> plt.subplots(</span><span style="color:#9CDCFE">figsize</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">(</span><span style="color:#B5CEA8">12</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">7</span><span style="color:#CCCCCC">))</span></span>
+<span><span style="color:#CCCCCC">    ax.axvspan(</span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8">6.5</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.15</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"light_gray"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">zorder</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ax.axvspan(</span><span style="color:#B5CEA8">3</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.15</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"light_gray"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">zorder</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ax.axhline(</span></span>
+<span><span style="color:#9CDCFE">        y</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.axvline(</span></span>
+<span><span style="color:#9CDCFE">        x</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.axvline(</span></span>
+<span><span style="color:#9CDCFE">        x</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">3</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.errorbar(</span></span>
+<span><span style="color:#CCCCCC">        coef_df[</span><span style="color:#CE9178">"relative_period"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CCCCCC">        coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        yerr</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">[</span></span>
+<span><span style="color:#CCCCCC">            coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">-</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"conf_low"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CCCCCC">            coef_df[</span><span style="color:#CE9178">"conf_high"</span><span style="color:#CCCCCC">] </span><span style="color:#D4D4D4">-</span><span style="color:#CCCCCC"> coef_df[</span><span style="color:#CE9178">"estimate"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CCCCCC">        ],</span></span>
+<span><span style="color:#9CDCFE">        fmt</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"o"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"primary"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        markersize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">6</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        capsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">4</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        capthick</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        ecolor</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"primary"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        elinewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.8</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        zorder</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">3</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span></span>
+<span><span style="color:#CCCCCC">    annotation_y </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> max_conf_high </span><span style="color:#D4D4D4">*</span><span style="color:#B5CEA8"> 0.7</span><span style="color:#C586C0"> if</span><span style="color:#CCCCCC"> max_conf_high </span><span style="color:#D4D4D4">></span><span style="color:#B5CEA8"> 0</span><span style="color:#C586C0"> else</span><span style="color:#CCCCCC"> max_conf_high </span><span style="color:#D4D4D4">*</span><span style="color:#B5CEA8"> 0.3</span></span>
+<span><span style="color:#CCCCCC">    ax.annotate(</span></span>
+<span><span style="color:#CE9178">        "pre-pandemic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        xy</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">(</span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">, annotation_y),</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">13</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        ha</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"center"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        style</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"italic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.annotate(</span></span>
+<span><span style="color:#CE9178">        "pandemic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        xy</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">(</span><span style="color:#B5CEA8">1.5</span><span style="color:#CCCCCC">, annotation_y),</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">13</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"primary"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        ha</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"center"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        style</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"italic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.annotate(</span></span>
+<span><span style="color:#CE9178">        "post-pandemic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        xy</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">(</span><span style="color:#B5CEA8">4.5</span><span style="color:#CCCCCC">, annotation_y),</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">13</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#9CDCFE">        ha</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"center"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        style</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"italic"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.set_xlabel(</span></span>
+<span><span style="color:#CE9178">        "period relative to the event"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">14</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"dark_gray"</span><span style="color:#CCCCCC">]</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.set_ylabel(</span></span>
+<span><span style="color:#569CD6">        f</span><span style="color:#CE9178">"estimated effect (</span><span style="color:#569CD6">{</span><span style="color:#CCCCCC">measure_unit</span><span style="color:#569CD6">}</span><span style="color:#CE9178">)"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">14</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"dark_gray"</span><span style="color:#CCCCCC">],</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.set_title(</span></span>
+<span><span style="color:#CE9178">        "effect of COVID-19 on earnings over time"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">16</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        fontweight</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"bold"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"#333333"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        pad</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">15</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.text(</span></span>
+<span><span style="color:#B5CEA8">        0.5</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#B5CEA8">        1.02</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CE9178">        "period relevance k = -1 (2019)"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        transform</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">ax.transAxes,</span></span>
+<span><span style="color:#9CDCFE">        fontsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">11</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        color</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"grey"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#9CDCFE">        ha</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"center"</span><span style="color:#CCCCCC">,</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.set_xticks(</span><span style="color:#DCDCAA">range</span><span style="color:#CCCCCC">(</span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">))</span></span>
+<span><span style="color:#CCCCCC">    ax.set_xlim(</span><span style="color:#D4D4D4">-</span><span style="color:#B5CEA8">6.5</span><span style="color:#CCCCCC">, </span><span style="color:#B5CEA8">5</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    y_padding </span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC"> (</span></span>
+<span><span style="color:#CCCCCC">        (max_conf_high </span><span style="color:#D4D4D4">-</span><span style="color:#CCCCCC"> min_conf_low) </span><span style="color:#D4D4D4">*</span><span style="color:#B5CEA8"> 0.2</span><span style="color:#C586C0"> if</span><span style="color:#CCCCCC"> max_conf_high </span><span style="color:#D4D4D4">!=</span><span style="color:#CCCCCC"> min_conf_low </span><span style="color:#C586C0">else</span><span style="color:#B5CEA8"> 1</span></span>
+<span><span style="color:#CCCCCC">    )</span></span>
+<span><span style="color:#CCCCCC">    ax.set_ylim(min_conf_low </span><span style="color:#D4D4D4">-</span><span style="color:#CCCCCC"> y_padding, max_conf_high </span><span style="color:#D4D4D4">+</span><span style="color:#CCCCCC"> y_padding)</span></span>
+<span><span style="color:#CCCCCC">    ax.spines[</span><span style="color:#CE9178">"top"</span><span style="color:#CCCCCC">].set_visible(</span><span style="color:#569CD6">False</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ax.spines[</span><span style="color:#CE9178">"right"</span><span style="color:#CCCCCC">].set_visible(</span><span style="color:#569CD6">False</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ax.spines[</span><span style="color:#CE9178">"left"</span><span style="color:#CCCCCC">].set_color(book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">])</span></span>
+<span><span style="color:#CCCCCC">    ax.spines[</span><span style="color:#CE9178">"bottom"</span><span style="color:#CCCCCC">].set_color(book_colors[</span><span style="color:#CE9178">"muted"</span><span style="color:#CCCCCC">])</span></span>
+<span><span style="color:#CCCCCC">    ax.tick_params(</span><span style="color:#9CDCFE">colors</span><span style="color:#D4D4D4">=</span><span style="color:#CCCCCC">book_colors[</span><span style="color:#CE9178">"dark_gray"</span><span style="color:#CCCCCC">], </span><span style="color:#9CDCFE">labelsize</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">11</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    ax.grid(</span><span style="color:#569CD6">True</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">alpha</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.3</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linestyle</span><span style="color:#D4D4D4">=</span><span style="color:#CE9178">"--"</span><span style="color:#CCCCCC">, </span><span style="color:#9CDCFE">linewidth</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.5</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    plt.tight_layout()</span></span>
+<span><span style="color:#CCCCCC">    plt.subplots_adjust(</span><span style="color:#9CDCFE">bottom</span><span style="color:#D4D4D4">=</span><span style="color:#B5CEA8">0.12</span><span style="color:#CCCCCC">)</span></span>
+<span><span style="color:#CCCCCC">    plt.show()</span></span>
+<span></span>
+<span><span style="color:#C586C0">    return</span><span style="color:#CCCCCC"> fig, ax, coef_df</span></span></code></pre>
+</div>
