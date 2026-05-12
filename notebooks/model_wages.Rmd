@@ -310,6 +310,13 @@ print(confint(model4, level = 0.95))
 ```
 
 ```{r}
+wald_test <- wald(model4, "period_relevance::-[2-5]")
+print(wald_test)
+```
+
+
+
+```{r}
 model4a <- feols(
     log(wages + 1) ~ i(period_relevance, has_disability_period, ref = -1) | idind + year,
     cluster = ~idind,
@@ -351,6 +358,7 @@ coefplot(model4)
 ```{r}
 iplot(model4)
 ```
+
 
 
 
@@ -752,7 +760,7 @@ summary(psm_full_logit, un = FALSE)
 ```
 
 ```{r}
-psm_full_logit$
+9309 + 221
 ```
 
 

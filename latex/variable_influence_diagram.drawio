@@ -1,0 +1,48 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.16 Chrome/132.0.6834.196 Electron/34.2.0 Safari/537.36" version="26.0.16">
+  <diagram name="Page-1" id="1TArE0MOX3JGXIt5hcfi">
+    <mxGraphModel dx="694" dy="848" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=1;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-1" target="2Hp3mbuB5e0Dqvwmjaqv-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-1" target="2Hp3mbuB5e0Dqvwmjaqv-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-1" value="Individual fixed-effects, γ&lt;span style=&quot;font-size: 10px;&quot;&gt;&lt;sub&gt;i&lt;/sub&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="350" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;curved=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-3" target="2Hp3mbuB5e0Dqvwmjaqv-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-3" value="disability" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="350" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;curved=1;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-4" target="2Hp3mbuB5e0Dqvwmjaqv-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-4" value="period fixed-effects, λ&lt;span style=&quot;font-size: 10px;&quot;&gt;&lt;sub&gt;t&lt;/sub&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="210" y="480" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-5" value="wages" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="430" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;curved=1;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-6" target="2Hp3mbuB5e0Dqvwmjaqv-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;curved=1;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="2Hp3mbuB5e0Dqvwmjaqv-6" target="2Hp3mbuB5e0Dqvwmjaqv-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="100" y="560" />
+              <mxPoint x="570" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2Hp3mbuB5e0Dqvwmjaqv-6" value="Unobserved confounders:&lt;div&gt;ageism,&lt;/div&gt;&lt;div&gt;discrimination,&lt;/div&gt;&lt;div&gt;employer&#39;s prejudge&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="450" width="160" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
