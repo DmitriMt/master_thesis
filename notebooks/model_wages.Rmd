@@ -31,15 +31,17 @@ library(modelsummary)
 
 ```{r}
 
-panel = read_parquet('../data/wages_working_data3.parquet')
+panel = read_parquet('../data/wages_working_data3_1.parquet')
 panel = panel %>%
   filter(year %in% c(
     2016, 
     2017, 
     2018, 
-    2019, 2020,
-    2022
+    2019, 2020
+    #2022
     ))
+panel = panel %>%
+  filter(is_secondary %in% c(1))
 #panel$period_relevance = panel$period_relevance - 1
 #panel$period <- ifelse(panel$year %in% c(2020), 1, 0)
 #panel$has_disability_period <- panel$period * panel$has_disablity
@@ -55,7 +57,7 @@ panel
 
 
 ```{r}
-panel_full = read_parquet('../data/wages_working_data3.parquet')
+panel_full = read_parquet('../data/wages_working_data3_1.parquet')
 #panel_full$period_relevance = panel_full$period_relevance - 1
 #panel_full$period <- ifelse(panel_full$year >= 2020, 1, 0)
 #panel_full$has_disability_period <- panel_full$period * panel_full$has_disablity
@@ -101,8 +103,8 @@ print(confint(model1, level = 0.90))
 
 ```{r}
 model1_log <- feols(
-    log(wage_j1 + 1) ~ has_disability_period | idind + year,
-    cluster = ~idind,
+    log(wage_j1 + 1) ~ I(has_disablity * period) | idind + year,
+    #cluster = ~idind,
     data = panel ,
     #weights= ~ inwgt,
 )
@@ -117,7 +119,7 @@ model1a <- feols(
     wages ~ has_disability_period | idind + year,
     cluster = ~idind,
     data = panel ,
-    #weights= ~ inwgt,
+    weights= ~ inwgt,
 )
 print(summary(model1a))
 
@@ -130,12 +132,12 @@ model1b <- feols(
     wages ~ I(has_disablity * period) | idind + year,
     cluster = ~idind,
     data = panel ,
-    #weights= ~ inwgt,
+    #weights= ~ inwgt
 )
 print(summary(model1b))
 
 
-print(confint(model1b, level = 0.95))
+print(confint(model1b, level = 0.90))
 ```
 
 
@@ -143,6 +145,7 @@ print(confint(model1b, level = 0.95))
 modelsummary(model1a,
              output = "html",
              title = "Regression Results",
+             stars=TRUE,
              digits = 3)
 ```
 
@@ -151,7 +154,7 @@ modelsummary(model1a,
 
 ```{r}
 model1false <- feols(
-    wages ~ has_disability | idind + year,
+    wages ~ has_disability + is_secondary | idind + year,
     cluster = ~idind,
     data = panel ,
     #weights= ~ inwgt,
